@@ -16,10 +16,12 @@ RUN apt-get update
 ##### ENV #####
 ENV RABBITMQ_SERVICE_NAME {{ rabbitmq.service_name }}
 ENV RABBITMQ_SERVICE_DIR /etc/service/$RABBITMQ_SERVICE_NAME
+ENV RABBITMQ_CONFIG_DIR /etc/rabbitmq/
 ENV RABBITMQ_RUN_FILE $RABBITMQ_SERVICE_DIR/run
 ##### ENV #####
 # add run scripts and configuration
 ADD rabbitmq/ $RABBITMQ_SERVICE_DIR/
+ADD rabbitmq_conf/ $RABBITMQ_CONFIG_DIR/
 
 RUN echo installing rabbitmq dependencies && \
     apt-get install -y {% for dep in rabbitmq.reqs %} {{ dep }}{% endfor %} && \
