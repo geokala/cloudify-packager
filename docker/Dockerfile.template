@@ -255,7 +255,11 @@ RUN echo installing celery dependencies && \
     virtualenv $CELERY_VIRTUAL_ENV_DIR && \
     \
     echo installing celery python requirements in virtualenv && \
-    $CELERY_VIRTUAL_ENV_DIR/bin/pip install $(echo {{ celery.python_install_requires }} | tr -d "',[]")
+    $CELERY_VIRTUAL_ENV_DIR/bin/pip install $(echo {{ celery.python_install_requires }} | tr -d "',[]") && \
+    sed -i 's/def get_manager_ip(/def get_manager_ip(bracketed_ipv6=True/' /etc/service/celeryd-cloudify-management/env/lib/python2.7/site-packages/cloudify/utils.py && \
+    sed -i 's/return os.environ\[MANAGER_IP_KEY\]/ip = os.environ[MANAGER_IP_KEY]\n    if bracketed_ipv6:\n        if ip.count('"'"':'"'"') >= 2:\n            if not ip.startswith('"'"'['"'"'):\n                ip = '"'"'[{ip}'"'"'.format(ip=ip)\n            if not ip.endswith('"'"']'"'"'):\n                ip = '"'"'{ip}]'"'"'.format(ip=ip)\n    else:\n        ip = ip.strip('"'"'[]'"'"')\n    return ip/' /etc/service/celeryd-cloudify-management/env/lib/python2.7/site-packages/cloudify/utils.py && \
+    sed -i 's/get_manager_ip()/get_manager_ip(bracketed_ipv6=False)/' /etc/service/celeryd-cloudify-management/env/lib/python2.7/site-packages/cloudify/amqp_client.py && \
+    sed -i 's/get_manager_ip()/get_manager_ip(bracketed_ipv6=False)/' /etc/service/celeryd-cloudify-management/env/lib/python2.7/site-packages/riemann_controller/tasks.py
 
 VOLUME {% for dep in celery.persistence_path %} {{ dep }}{% endfor %}
 
